@@ -1,0 +1,159 @@
+# Panel de administración (Sveltia CMS) · https://sveltiacms.app
+# Cada vez que se guarda un cambio, se crea un commit en GitHub y Cloudflare vuelve a publicar el sitio.
+
+backend:
+  name: github
+  repo: Oguri-Dev/pia-gallery
+  branch: main
+  # URL del autenticador (sveltia-cms-auth desplegado en Cloudflare Workers).
+  # Mientras no esté configurado, se puede entrar con "Sign In with Token".
+  # base_url: https://sveltia-cms-auth.almonacidleuquen.workers.dev
+
+site_url: https://pia-gallery.almonacidleuquen.workers.dev
+display_url: https://pia-gallery.almonacidleuquen.workers.dev
+
+# Biblioteca de imágenes global (las colecciones indican la ruta relativa que usa Astro)
+media_folder: /src/assets/fotografia
+public_folder: /src/assets/fotografia
+
+slug:
+  encoding: ascii
+  clean_accents: true
+
+collections:
+  # ─────────────────────────── PÁGINAS ───────────────────────────
+  - name: paginas
+    label: Páginas
+    media_folder: /src/assets/fotografia
+    public_folder: ../../assets/fotografia
+    files:
+      - name: general
+        label: Datos generales y contacto
+        file: src/content/paginas/general.md
+        fields:
+          - { name: nombre, label: Nombre, widget: string }
+          - { name: disciplinas, label: Disciplinas (bajo el nombre), widget: string }
+          - { name: descripcion, label: Descripción para buscadores y redes, widget: text }
+          - { name: email, label: Correo de contacto, widget: string }
+          - { name: instagram, label: Usuario de Instagram (sin @), widget: string, required: false }
+
+      - name: inicio
+        label: Inicio
+        file: src/content/paginas/inicio.md
+        fields:
+          - { name: etiqueta, label: Etiqueta sobre el nombre, widget: string, required: false }
+          - { name: frase, label: Frase artística, widget: text }
+          - { name: imagen, label: Imagen principal, widget: image }
+          - { name: imagen_obra, label: Imagen del acceso a Obra, widget: image, required: false }
+          - { name: imagen_fotografia, label: Imagen del acceso a Fotografía, widget: image }
+          - { name: imagen_investigacion, label: Imagen del acceso a Investigación, widget: image }
+
+      - name: sobre-mi
+        label: Sobre mí
+        file: src/content/paginas/sobre-mi.md
+        fields:
+          - { name: retrato, label: Fotografía personal, widget: image, required: false }
+          - { name: rol, label: Rol (bajo el nombre), widget: string }
+          - { name: frase, label: Frase de presentación, widget: text }
+          - { name: body, label: Biografía, widget: markdown, required: false }
+          - name: formacion
+            label: Formación
+            label_singular: estudio
+            widget: list
+            required: false
+            fields:
+              - { name: texto, label: Texto, widget: string }
+          - name: exposiciones
+            label: Proyectos / exposiciones
+            label_singular: proyecto
+            widget: list
+            required: false
+            fields:
+              - { name: texto, label: Texto, widget: string }
+
+      - name: investigacion
+        label: Investigación
+        file: src/content/paginas/investigacion.md
+        fields:
+          - { name: etiqueta, label: Etiqueta superior, widget: string, required: false }
+          - { name: titulo, label: Título de la investigación, widget: string }
+          - { name: bajada, label: Descripción breve, widget: text }
+          - { name: conceptos, label: Conceptos clave, widget: list, required: false }
+          - name: recorrido
+            label: Recorrido (foto + bitácora)
+            label_singular: paso
+            widget: list
+            required: false
+            fields:
+              - { name: imagen, label: Fotografía, widget: image }
+              - { name: fecha, label: Fecha, widget: string, required: false }
+              - { name: bitacora, label: Fragmento de bitácora, widget: text, required: false }
+          - name: comparacion
+            label: Comparación antes / después
+            widget: object
+            required: false
+            fields:
+              - { name: mostrar, label: Mostrar esta sección, widget: boolean, default: true }
+              - { name: titulo, label: Título, widget: string, required: false }
+              - { name: antes, label: Imagen "antes", widget: image }
+              - { name: antes_pie, label: Pie "antes", widget: string, required: false }
+              - { name: despues, label: Imagen "después", widget: image }
+              - { name: despues_pie, label: Pie "después", widget: string, required: false }
+
+  # ─────────────────────────── FOTOGRAFÍA ───────────────────────────
+  - name: series
+    label: Series fotográficas
+    label_singular: serie
+    folder: src/content/series
+    media_folder: /src/assets/fotografia
+    public_folder: ../../assets/fotografia
+    create: true
+    delete: true
+    slug: "{{titulo}}"
+    identifier_field: titulo
+    summary: "{{orden}} · {{titulo}}"
+    sortable_fields: [orden, titulo]
+    fields:
+      - { name: titulo, label: Título, widget: string }
+      - { name: subtitulo, label: Subtítulo, widget: string, required: false }
+      - { name: orden, label: Orden en la página, widget: number, value_type: int, default: 1 }
+      - { name: portada, label: Imagen de portada, widget: image }
+      - { name: body, label: Texto de introducción, widget: markdown, required: false }
+      - name: fotos
+        label: Fotografías (arrastra para reordenar)
+        label_singular: fotografía
+        widget: list
+        summary: "{{fields.pie}}"
+        fields:
+          - { name: imagen, label: Imagen, widget: image }
+          - { name: pie, label: Pie de foto (opcional), widget: string, required: false }
+
+  # ─────────────────────────── OBRA ───────────────────────────
+  - name: obras
+    label: Obra (pintura y dibujo)
+    label_singular: obra
+    folder: src/content/obras
+    create: true
+    delete: true
+    slug: "{{titulo}}"
+    identifier_field: titulo
+    summary: "{{titulo}} · {{año}}"
+    sortable_fields: [orden, titulo, año]
+    media_folder: /src/assets/obra
+    public_folder: ../../assets/obra
+    fields:
+      - { name: titulo, label: Título, widget: string }
+      - { name: año, label: Año, widget: number, value_type: int }
+      - name: categoria
+        label: Categoría
+        widget: select
+        options:
+          - { label: Pintura, value: pintura }
+          - { label: Dibujo, value: dibujo }
+      - { name: tecnica, label: Técnica, widget: string }
+      - { name: dimensiones, label: Dimensiones, widget: string, hint: "Ej: 80 × 90 cm" }
+      - { name: serie, label: Serie, widget: string, required: false }
+      - { name: imagen, label: Imagen de la obra, widget: image, required: false }
+      - { name: orden, label: Orden, widget: number, value_type: int, default: 0 }
+      - { name: ejemplo, label: Es contenido de ejemplo, widget: boolean, default: false, hint: "Desmarcar al cargar una obra real" }
+      - { name: body, label: Descripción, widget: markdown, required: false }

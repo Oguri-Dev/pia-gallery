@@ -1,0 +1,58 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Pendiente from '../../components/Pendiente.astro';
+import Tejuela from '../../components/Tejuela.astro';
+
+export async function getStaticPaths() {
+  const obras = (await getCollection('obras')).sort((a, b) => a.data.orden - b.data.orden);
+  return obras.map((o, i) => ({
+    params: { slug: o.id },
+    props: { obra: o, anterior: obras[i - 1], siguiente: obras[i + 1] },
+  }));
+}
+const { obra, anterior, siguiente } = Astro.props;
+const { Content } = await render(obra);
+const d = obra.data;
+---
+<Base titulo={d.titulo}>
+  <article class="contenedor ficha">
+    <div class="imagen">
+      {d.imagen
+        ? <Image src={d.imagen} alt={d.titulo} widths={[800, 1400, 2000]} sizes="(max-width: 900px) 100vw, 60vw" />
+        : <Pendiente texto="Imagen de la obra" />}
+    </div>
+    <div class="datos">
+      <a href="/obra" class="etiqueta">&larr; Obra</a>
+      <h1>{d.titulo}</h1>
+      {d.ejemplo && <span class="pendiente">Ejemplo</span>}
+      <p class="año">{d.año}</p>
+      <Tejuela cantidad={5} />
+      <dl>
+        <dt>Técnica</dt><dd>{d.tecnica}</dd>
+        <dt>Dimensiones</dt><dd>{d.dimensiones}</dd>
+        {d.serie && <><dt>Serie</dt><dd>{d.serie}</dd></>}
+      </dl>
+      <div class="texto"><Content /></div>
+      <nav class="paginas">
+        {anterior ? <a href={`/obra/${anterior.id}`}>&larr; Anterior</a> : <span></span>}
+        {siguiente && <a href={`/obra/${siguiente.id}`}>Siguiente &rarr;</a>}
+      </nav>
+    </div>
+  </article>
+</Base>
+<style>
+  .ficha { display: grid; grid-template-columns: 7fr 4fr; gap: clamp(32px, 6vw, 96px); padding-top: clamp(40px, 8vw, 100px); align-items: start; }
+  .imagen :global(img) { width: 100%; }
+  .datos { position: sticky; top: 120px; }
+  h1 { font-size: clamp(38px, 4vw, 54px); margin: 18px 0 6px; }
+  .año { font-family: var(--serif); font-size: 22px; color: var(--texto-2); margin-bottom: 24px; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 8px 20px; margin: 28px 0; font-size: 14px; }
+  dt { color: var(--texto-2); }
+  dd { margin: 0; }
+  .texto { color: var(--texto-2); max-width: 28em; }
+  .paginas { display: flex; justify-content: space-between; margin-top: 48px; padding-top: 20px; border-top: 1px solid var(--linea); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; }
+  .paginas a:hover { color: var(--madera); }
+  @media (max-width: 900px) { .ficha { grid-template-columns: 1fr; } .datos { position: static; } }
+</style>

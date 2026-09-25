@@ -1,0 +1,19 @@
+---
+// Recuadro de relleno para imágenes que aún no existen (ej: obras de pintura).
+interface Props { texto?: string; proporcion?: string }
+const { texto = 'Imagen pendiente', proporcion = '4 / 5' } = Astro.props;
+---
+<div class="relleno" style={`aspect-ratio:${proporcion}`}>
+  <span>{texto}</span>
+</div>
+<style>
+  .relleno {
+    width: 100%;
+    background: var(--fondo-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: repeating-linear-gradient(135deg, transparent 0 14px, rgba(138,118,100,0.06) 14px 15px);
+  }
+  span { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--texto-2); }
+</style>

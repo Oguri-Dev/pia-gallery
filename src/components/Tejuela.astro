@@ -1,0 +1,26 @@
+---
+// Detalle de identidad (PDF, sección 08): fragmento gráfico de tejuela,
+// usado como separador sutil. No literal, solo una huella.
+interface Props { cantidad?: number; class?: string }
+const { cantidad = 7, class: clase = '' } = Astro.props;
+const ancho = 14;
+---
+<svg
+  class={`tejuela ${clase}`}
+  width={cantidad * ancho}
+  height="12"
+  viewBox={`0 0 ${cantidad * ancho} 12`}
+  aria-hidden="true"
+>
+  {Array.from({ length: cantidad }, (_, i) => (
+    <path
+      d={`M${i * ancho + 1} 0 V6 Q${i * ancho + ancho / 2} 13 ${i * ancho + ancho - 1} 6 V0`}
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1"
+    />
+  ))}
+</svg>
+<style>
+  .tejuela { color: var(--madera); opacity: 0.55; display: block; }
+</style>

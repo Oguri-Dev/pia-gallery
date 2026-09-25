@@ -1,0 +1,88 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Tejuela from '../components/Tejuela.astro';
+import Pendiente from '../components/Pendiente.astro';
+import { getGeneral, getInicio } from '../lib/contenido';
+
+const sitio = await getGeneral();
+const inicio = await getInicio();
+const principal = inicio.imagen;
+const [nombre1, ...resto] = sitio.nombre.split(' ');
+
+const accesos = [
+  { href: '/obra', titulo: 'Obra', texto: 'Pintura y dibujo', img: inicio.imagen_obra ?? null },
+  { href: '/fotografia', titulo: 'Fotografía', texto: 'Series fotográficas', img: inicio.imagen_fotografia },
+  { href: '/investigacion', titulo: 'Investigación', texto: 'Fotografía y reflexión autobiográfica', img: inicio.imagen_investigacion },
+];
+---
+<Base>
+  <section class="portada contenedor">
+    <div class="texto">
+      {inicio.etiqueta && <p class="etiqueta">{inicio.etiqueta}</p>}
+      <h1>{nombre1}{resto.length > 0 && <><br />{resto.join(' ')}</>}</h1>
+      <p class="disciplinas etiqueta">{sitio.disciplinas}</p>
+      <Tejuela />
+      <p class="frase">{inicio.frase}</p>
+      <a href="/obra" class="enlace-linea">Ver obra</a>
+    </div>
+    <div class="imagen">
+      <Image src={principal} alt="Casa de tejuela en deterioro rodeada de árboles" widths={[640, 1200, 1800]} sizes="(max-width: 900px) 100vw, 58vw" loading="eager" fetchpriority="high" />
+    </div>
+  </section>
+
+  <section class="accesos contenedor">
+    {accesos.map((a) => (
+      <a href={a.href} class="acceso revelar">
+        <div class="marco">
+          {a.img
+            ? <Image src={a.img} alt="" widths={[640, 1200]} sizes="(max-width: 760px) 100vw, 33vw" />
+            : <Pendiente texto="Obra · pendiente" proporcion="4 / 5" />}
+        </div>
+        <h2>{a.titulo}</h2>
+        <p class="etiqueta">{a.texto}</p>
+      </a>
+    ))}
+  </section>
+</Base>
+
+<style>
+  .portada {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: clamp(32px, 6vw, 96px);
+    align-items: center;
+    min-height: min(calc(100dvh - 72px), 820px);
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+  h1 { font-size: clamp(56px, 8.5vw, 124px); font-weight: 300; margin: 18px 0 22px; line-height: 0.95; }
+  .disciplinas { margin-bottom: 28px; }
+  .frase {
+    font-family: var(--serif);
+    font-size: clamp(20px, 2vw, 25px);
+    line-height: 1.45;
+    max-width: 21em;
+    margin: 28px 0 40px;
+  }
+  .imagen img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+
+  .accesos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(24px, 3vw, 48px);
+    padding-top: clamp(40px, 6vw, 80px);
+  }
+  .marco { overflow: hidden; margin-bottom: 22px; }
+  .marco :global(img) { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; transition: transform 1.2s ease; }
+  .acceso:hover .marco :global(img) { transform: scale(1.03); }
+  .acceso h2 { font-size: 32px; margin-bottom: 6px; }
+
+  @media (max-width: 900px) {
+    .portada { grid-template-columns: 1fr; min-height: 0; padding-top: 40px; }
+    .imagen { order: -1; }
+  }
+  @media (max-width: 760px) {
+    .accesos { grid-template-columns: 1fr; gap: 56px; }
+  }
+</style>

@@ -1,0 +1,73 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Pendiente from '../../components/Pendiente.astro';
+
+const obras = (await getCollection('obras')).sort((a, b) => a.data.orden - b.data.orden);
+const hayEjemplos = obras.some((o) => o.data.ejemplo);
+const filtros = [
+  { id: 'todas', label: 'Todas' },
+  { id: 'pintura', label: 'Pintura' },
+  { id: 'dibujo', label: 'Dibujo' },
+];
+---
+<Base titulo="Obra" descripcion="Pintura y dibujo de Pía Gallardo.">
+  <header class="cabecera-seccion contenedor">
+    <p class="etiqueta">Obra {hayEjemplos && <span class="pendiente">Contenido de ejemplo</span>}</p>
+    <h1>Pintura y dibujo</h1>
+    <p class="bajada">Una galería, no un catálogo.</p>
+  </header>
+
+  <div class="contenedor">
+    <div class="filtros" role="group" aria-label="Filtrar obras">
+      {filtros.map((f, i) => (
+        <button data-filtro={f.id} aria-pressed={i === 0 ? 'true' : 'false'}>{f.label}</button>
+      ))}
+    </div>
+
+    <section class="rejilla">
+      {obras.map((o) => (
+        <a href={`/obra/${o.id}`} class="obra revelar" data-categoria={o.data.categoria}>
+          <div class="marco">
+            {o.data.imagen
+              ? <Image src={o.data.imagen} alt={o.data.titulo} widths={[400, 700]} sizes="(max-width: 760px) 50vw, 25vw" />
+              : <Pendiente texto={o.data.titulo} />}
+          </div>
+          <h2>{o.data.titulo}</h2>
+          <p class="meta">{o.data.año} · {o.data.tecnica}</p>
+        </a>
+      ))}
+    </section>
+  </div>
+</Base>
+
+<script>
+  const botones = document.querySelectorAll<HTMLButtonElement>('[data-filtro]');
+  const obras = document.querySelectorAll<HTMLElement>('.obra');
+  botones.forEach((b) =>
+    b.addEventListener('click', () => {
+      botones.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      const f = b.dataset.filtro;
+      obras.forEach((o) => { o.hidden = f !== 'todas' && o.dataset.categoria !== f; });
+    }),
+  );
+</script>
+
+<style>
+  .filtros { display: flex; gap: 28px; margin-bottom: 56px; border-bottom: 1px solid var(--linea); }
+  .filtros button {
+    background: none; border: 0; cursor: pointer; font-family: var(--sans);
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--texto-2);
+    padding: 0 0 14px; border-bottom: 1px solid transparent; margin-bottom: -1px;
+  }
+  .filtros button[aria-pressed='true'] { color: var(--texto); border-color: var(--madera); }
+  .rejilla { display: grid; grid-template-columns: repeat(4, 1fr); gap: 56px clamp(20px, 3vw, 40px); }
+  .obra[hidden] { display: none; }
+  .marco { margin-bottom: 18px; overflow: hidden; }
+  .marco :global(img) { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; transition: transform 1.2s ease; }
+  .obra:hover .marco :global(img) { transform: scale(1.03); }
+  h2 { font-size: 22px; }
+  .meta { font-size: 12px; color: var(--texto-2); margin-top: 4px; }
+  @media (max-width: 900px) { .rejilla { grid-template-columns: repeat(2, 1fr); } }
+</style>

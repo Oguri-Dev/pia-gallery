@@ -1,0 +1,109 @@
+---
+import { navegacion } from '../data/sitio';
+import { getGeneral } from '../lib/contenido';
+const sitio = await getGeneral();
+const actual = Astro.url.pathname.replace(/\/$/, '') || '/';
+const activo = (href: string) =>
+  href === '/' ? actual === '/' : actual === href || actual.startsWith(href + '/');
+---
+<header class="cabecera">
+  <div class="contenedor fila">
+    <a href="/" class="marca">{sitio.nombre}</a>
+    <button class="menu-btn" aria-expanded="false" aria-controls="nav-principal" aria-label="Abrir menú">
+      <span></span><span></span>
+    </button>
+    <nav id="nav-principal" class="nav">
+      {navegacion.map((item) => (
+        <a href={item.href} class:list={{ activo: activo(item.href) }} aria-current={activo(item.href) ? 'page' : undefined}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.menu-btn');
+  const cab = document.querySelector('.cabecera');
+  btn?.addEventListener('click', () => {
+    const abierto = cab?.classList.toggle('abierto');
+    btn.setAttribute('aria-expanded', String(!!abierto));
+  });
+</script>
+
+<style>
+  .cabecera {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--fondo) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--linea);
+  }
+  .fila {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+  }
+  .marca {
+    font-size: 12px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .nav { display: flex; gap: clamp(20px, 3vw, 40px); }
+  .nav a {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--texto-2);
+    padding: 6px 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.3s, border-color 0.3s;
+  }
+  .nav a:hover { color: var(--texto); }
+  .nav a.activo { color: var(--texto); border-color: var(--madera); }
+
+  .menu-btn {
+    display: none;
+    background: none;
+    border: 0;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+  }
+  .menu-btn span {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    height: 1px;
+    background: var(--texto);
+    transition: transform 0.3s;
+  }
+  .menu-btn span:first-child { top: 14px; }
+  .menu-btn span:last-child { top: 21px; }
+
+  @media (max-width: 760px) {
+    .menu-btn { display: block; }
+    .nav {
+      position: absolute;
+      top: 72px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      gap: 0;
+      background: var(--fondo);
+      border-bottom: 1px solid var(--linea);
+      padding: 8px var(--gutter) 24px;
+      display: none;
+    }
+    .nav a { padding: 14px 0; border-bottom: 1px solid var(--linea); }
+    .nav a.activo { border-color: var(--linea); color: var(--madera); }
+    :global(.cabecera.abierto) .nav { display: flex; }
+    :global(.cabecera.abierto) .menu-btn span:first-child { transform: translateY(3.5px) rotate(45deg); }
+    :global(.cabecera.abierto) .menu-btn span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
+  }
+</style>

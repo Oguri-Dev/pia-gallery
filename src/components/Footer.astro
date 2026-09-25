@@ -1,0 +1,35 @@
+---
+import { getGeneral } from '../lib/contenido';
+const g = await getGeneral();
+const sitio = { nombre: g.nombre, contacto: { email: g.email, instagram: g.instagram } };
+import Tejuela from './Tejuela.astro';
+const año = new Date().getFullYear();
+---
+<footer class="pie">
+  <div class="contenedor">
+    <Tejuela cantidad={5} />
+    <div class="fila">
+      <p class="marca">{sitio.nombre}</p>
+      <div class="links">
+        <a href={`mailto:${sitio.contacto.email}`}>Contacto</a>
+        <a href={`https://instagram.com/${sitio.contacto.instagram}`} target="_blank" rel="noopener">Instagram</a>
+      </div>
+      <p class="copy">© {año} · Todas las imágenes son propiedad de la artista</p>
+    </div>
+  </div>
+</footer>
+<style>
+  .pie { border-top: 1px solid var(--linea); padding: 48px 0 40px; margin-top: var(--aire); }
+  .fila {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px 32px;
+    margin-top: 24px;
+  }
+  .marca { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; margin: 0; }
+  .links { display: flex; gap: 28px; }
+  .links a, .copy { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--texto-2); margin: 0; }
+  .links a:hover { color: var(--madera); }
+</style>

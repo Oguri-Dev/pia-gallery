@@ -1,0 +1,67 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Pendiente from '../components/Pendiente.astro';
+import Tejuela from '../components/Tejuela.astro';
+import { getGeneral, getSobreMi } from '../lib/contenido';
+
+// Contenido editable en src/content/paginas/sobre-mi.md (panel /admin → Páginas → Sobre mí)
+const sitio = await getGeneral();
+const entrada = await getSobreMi();
+const d = entrada.data;
+const { Content } = await render(entrada);
+---
+<Base titulo="Sobre mí">
+  <section class="contenedor perfil">
+    <div class="retrato">
+      {d.retrato
+        ? <Image src={d.retrato} alt={`Retrato de ${sitio.nombre}`} widths={[480, 900]} sizes="(max-width: 900px) 100vw, 40vw" />
+        : <Pendiente texto="Fotografía personal" proporcion="3 / 4" />}
+    </div>
+    <div class="texto">
+      <p class="etiqueta">Sobre mí</p>
+      <h1>{sitio.nombre}</h1>
+      <p class="rol etiqueta">{d.rol}</p>
+      <Tejuela />
+      <p class="bio">{d.frase}</p>
+      <div class="bio-2"><Content /></div>
+
+      <div class="bloques">
+        {d.formacion.length > 0 && (
+          <div>
+            <h2 class="etiqueta">Formación</h2>
+            <ul>{d.formacion.map((f) => <li>{f.texto}</li>)}</ul>
+          </div>
+        )}
+        {d.exposiciones.length > 0 && (
+          <div>
+            <h2 class="etiqueta">Proyectos / exposiciones</h2>
+            <ul>{d.exposiciones.map((e) => <li>{e.texto}</li>)}</ul>
+          </div>
+        )}
+        <div id="contacto">
+          <h2 class="etiqueta">Contacto</h2>
+          <ul>
+            <li><a href={`mailto:${sitio.email}`}>{sitio.email}</a></li>
+            {sitio.instagram && <li><a href={`https://instagram.com/${sitio.instagram}`} target="_blank" rel="noopener">Instagram · @{sitio.instagram}</a></li>}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .perfil { display: grid; grid-template-columns: 4fr 6fr; gap: clamp(32px, 7vw, 120px); padding-top: var(--aire); align-items: start; }
+  .retrato :global(img) { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; }
+  h1 { font-size: clamp(48px, 6vw, 80px); margin: 14px 0 12px; }
+  .rol { margin-bottom: 28px; }
+  .bio { font-family: var(--serif); font-size: clamp(21px, 2.2vw, 27px); line-height: 1.45; margin: 28px 0 18px; max-width: 22em; }
+  .bio-2 { color: var(--texto-2); max-width: 36em; }
+  .bloques { display: grid; gap: 36px; margin-top: 56px; }
+  .bloques > div { border-top: 1px solid var(--linea); padding-top: 18px; }
+  ul { list-style: none; padding: 0; margin: 12px 0 0; }
+  li { margin-bottom: 6px; }
+  li a:hover { color: var(--madera); }
+  @media (max-width: 900px) { .perfil { grid-template-columns: 1fr; } .retrato { max-width: 420px; } }
+</style>

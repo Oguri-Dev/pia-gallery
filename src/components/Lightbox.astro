@@ -1,0 +1,85 @@
+---
+// Visor de imágenes a pantalla completa.
+// Uso: cualquier <a data-visor="grupo" href="imagen-grande.jpg"> abre el visor.
+---
+<dialog class="visor" aria-label="Visor de imágenes">
+  <button class="cerrar" aria-label="Cerrar">Cerrar</button>
+  <button class="nav ant" aria-label="Anterior">&larr;</button>
+  <figure>
+    <img alt="" />
+    <figcaption></figcaption>
+  </figure>
+  <button class="nav sig" aria-label="Siguiente">&rarr;</button>
+</dialog>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('dialog.visor')!;
+  const img = dlg.querySelector('img')!;
+  const cap = dlg.querySelector('figcaption')!;
+  let grupo: HTMLAnchorElement[] = [];
+  let i = 0;
+
+  function mostrar(n: number) {
+    i = (n + grupo.length) % grupo.length;
+    const a = grupo[i];
+    img.src = a.href;
+    img.alt = a.querySelector('img')?.alt ?? '';
+    const num = grupo.length > 1 ? `${i + 1} / ${grupo.length}` : '';
+    const pie = a.dataset.pie ?? '';
+    cap.textContent = [pie, num].filter(Boolean).join('  ·  ');
+  }
+
+  document.addEventListener('click', (ev) => {
+    const a = (ev.target as HTMLElement).closest<HTMLAnchorElement>('a[data-visor]');
+    if (!a) return;
+    ev.preventDefault();
+    grupo = [...document.querySelectorAll<HTMLAnchorElement>(`a[data-visor="${a.dataset.visor}"]`)];
+    mostrar(grupo.indexOf(a));
+    dlg.showModal();
+  });
+
+  dlg.querySelector('.cerrar')!.addEventListener('click', () => dlg.close());
+  dlg.querySelector('.ant')!.addEventListener('click', () => mostrar(i - 1));
+  dlg.querySelector('.sig')!.addEventListener('click', () => mostrar(i + 1));
+  dlg.addEventListener('click', (ev) => { if (ev.target === dlg) dlg.close(); });
+  document.addEventListener('keydown', (ev) => {
+    if (!dlg.open) return;
+    if (ev.key === 'ArrowLeft') mostrar(i - 1);
+    if (ev.key === 'ArrowRight') mostrar(i + 1);
+  });
+  // Deslizar en celular
+  let x0 = 0;
+  dlg.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  dlg.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) mostrar(dx < 0 ? i + 1 : i - 1);
+  });
+</script>
+
+<style>
+  .visor {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgba(245, 243, 238, 0.98);
+    color: var(--texto);
+  }
+  .visor[open] { display: grid; grid-template-columns: 72px 1fr 72px; align-items: center; }
+  .visor::backdrop { background: transparent; }
+  figure { margin: 0; height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 64px 0 24px; }
+  figure img { max-height: calc(100dvh - 120px); max-width: 100%; width: auto; object-fit: contain; }
+  figcaption { font-size: 11px; letter-spacing: 0.2em; color: var(--texto-2); margin-top: 16px; }
+  button { background: none; border: 0; cursor: pointer; color: var(--texto-2); font-family: var(--sans); }
+  button:hover { color: var(--texto); }
+  button:focus:not(:focus-visible) { outline: none; }
+  .nav { font-size: 22px; height: 100%; }
+  .cerrar { position: absolute; top: 20px; right: 24px; font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; z-index: 2; }
+  @media (max-width: 760px) {
+    .visor[open] { grid-template-columns: 0 1fr 0; }
+    .nav { display: none; }
+  }
+</style>

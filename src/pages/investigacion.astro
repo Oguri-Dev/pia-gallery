@@ -1,0 +1,97 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Tejuela from '../components/Tejuela.astro';
+import Lightbox from '../components/Lightbox.astro';
+import { getInvestigacion } from '../lib/contenido';
+
+// Contenido editable en src/content/paginas/investigacion.md (panel /admin → Páginas → Investigación)
+const inv = await getInvestigacion();
+
+// Recorrido: fotografía + fragmento de bitácora + pausa visual (PDF, sección 06)
+const recorrido = await Promise.all(
+  inv.recorrido.map(async (r) => ({
+    ...r,
+    grande: (await getImage({ src: r.imagen, width: 1800, format: 'webp' })).src,
+  })),
+);
+const comp = inv.comparacion;
+---
+<Base titulo="Investigación" descripcion={inv.titulo}>
+  <header class="cabecera-seccion contenedor">
+    {inv.etiqueta && <p class="etiqueta">{inv.etiqueta}</p>}
+    <h1 class="titulo">{inv.titulo}</h1>
+    <p class="bajada">{inv.bajada}</p>
+    {inv.conceptos.length > 0 && (
+      <ul class="conceptos">
+        {inv.conceptos.map((c) => <li>{c}</li>)}
+      </ul>
+    )}
+  </header>
+
+  <section class="recorrido">
+    {recorrido.map((r, i) => (
+      <>
+        <div class:list={['paso', 'contenedor', 'revelar', { invertido: i % 2 === 1 }]}>
+          <a href={r.grande} data-visor="investigacion" data-pie={r.fecha} class="img">
+            <Image src={r.imagen} alt="" widths={[640, 1200, 1800]} sizes="(max-width: 900px) 100vw, 60vw" />
+          </a>
+          {r.bitacora && (
+            <blockquote class="bitacora">
+              <p class="etiqueta">Bitácora{r.fecha && ` · ${r.fecha}`}</p>
+              <p class="cita">{r.bitacora}</p>
+            </blockquote>
+          )}
+        </div>
+        <div class="pausa" aria-hidden="true"><Tejuela cantidad={3} /></div>
+      </>
+    ))}
+  </section>
+
+  {comp && comp.mostrar && (
+    <section class="contenedor tiempo revelar">
+      {comp.titulo && <p class="etiqueta">{comp.titulo}</p>}
+      <div class="par">
+        <figure>
+          <Image src={comp.antes} alt={comp.antes_pie || 'Antes'} widths={[640, 1200]} sizes="(max-width: 760px) 100vw, 45vw" />
+          {comp.antes_pie && <figcaption>{comp.antes_pie}</figcaption>}
+        </figure>
+        <figure>
+          <Image src={comp.despues} alt={comp.despues_pie || 'Después'} widths={[640, 1200]} sizes="(max-width: 760px) 100vw, 45vw" />
+          {comp.despues_pie && <figcaption>{comp.despues_pie}</figcaption>}
+        </figure>
+      </div>
+    </section>
+  )}
+
+  <Lightbox />
+</Base>
+
+<style>
+  .titulo { font-size: clamp(36px, 5vw, 64px) !important; max-width: 16em; }
+  .conceptos { list-style: none; padding: 0; margin: 40px 0 0; display: flex; flex-wrap: wrap; gap: 10px; }
+  .conceptos li {
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--texto-2);
+    border: 1px solid var(--linea); padding: 6px 14px;
+  }
+  .paso { display: grid; grid-template-columns: 7fr 4fr; gap: clamp(32px, 6vw, 96px); align-items: center; }
+  .paso.invertido { grid-template-columns: 4fr 7fr; }
+  .paso.invertido .img { order: 2; }
+  .img { cursor: zoom-in; }
+  .img :global(img) { width: 100%; }
+  .bitacora { margin: 0; border-left: 1px solid var(--madera); padding-left: 28px; }
+  .cita { font-family: var(--serif); font-style: italic; font-size: clamp(20px, 2vw, 26px); line-height: 1.45; color: var(--texto); margin-top: 14px; white-space: pre-line; }
+  .pausa { display: flex; justify-content: center; padding: clamp(64px, 10vw, 140px) 0; }
+
+  .tiempo { background: var(--fondo-alt); padding-top: 64px; padding-bottom: 64px; }
+  .par { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 3vw, 40px); margin-top: 28px; }
+  figure { margin: 0; }
+  figure :global(img) { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
+  figcaption { font-size: 12px; color: var(--texto-2); margin-top: 12px; }
+
+  @media (max-width: 900px) {
+    .paso, .paso.invertido { grid-template-columns: 1fr; }
+    .paso.invertido .img { order: 0; }
+  }
+  @media (max-width: 760px) { .par { grid-template-columns: 1fr; } }
+</style>
