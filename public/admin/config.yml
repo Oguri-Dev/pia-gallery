@@ -42,7 +42,7 @@ collections:
         file: src/content/paginas/inicio.md
         fields:
           - { name: etiqueta, label: Etiqueta sobre el nombre, widget: string, required: false }
-          - { name: frase, label: Frase artística, widget: text }
+          - { name: frase, label: Presentación (texto bajo el nombre), widget: text, hint: 'Separa los párrafos con una línea en blanco.' }
           - { name: imagen, label: Imagen principal, widget: image }
           - { name: imagen_obra, label: Imagen del acceso a Obra, widget: image, required: false }
           - { name: imagen_fotografia, label: Imagen del acceso a Fotografía, widget: image }

@@ -8,7 +8,8 @@ import { getGeneral, getInicio } from '../lib/contenido';
 const sitio = await getGeneral();
 const inicio = await getInicio();
 const principal = inicio.imagen;
-const [nombre1, ...resto] = sitio.nombre.split(' ');
+// La presentación admite varios párrafos (separados por una línea en blanco)
+const parrafos = inicio.frase.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 
 const accesos = [
   { href: '/obra', titulo: 'Obra', texto: 'Pintura y dibujo', img: inicio.imagen_obra ?? null },
@@ -20,14 +21,16 @@ const accesos = [
   <section class="portada contenedor">
     <div class="texto">
       {inicio.etiqueta && <p class="etiqueta">{inicio.etiqueta}</p>}
-      <h1>{nombre1}{resto.length > 0 && <><br />{resto.join(' ')}</>}</h1>
+      <h1>{sitio.nombre}</h1>
       <p class="disciplinas etiqueta">{sitio.disciplinas}</p>
       <Tejuela />
-      <p class="frase">{inicio.frase}</p>
+      <div class="presentacion">
+        {parrafos.map((p) => <p>{p}</p>)}
+      </div>
       <a href="/obra" class="enlace-linea">Ver obra</a>
     </div>
     <div class="imagen">
-      <Image src={principal} alt="Casa de tejuela en deterioro rodeada de árboles" widths={[640, 1200, 1800]} sizes="(max-width: 900px) 100vw, 58vw" loading="eager" fetchpriority="high" />
+      <Image src={principal} alt="Fotografía de la casa de tejuela de la artista en Pumanzano, Chiloé" widths={[640, 1200, 1800]} sizes="(max-width: 900px) 100vw, 50vw" loading="eager" fetchpriority="high" />
     </div>
   </section>
 
@@ -49,23 +52,25 @@ const accesos = [
 <style>
   .portada {
     display: grid;
-    grid-template-columns: 5fr 7fr;
+    grid-template-columns: 6fr 6fr;
     gap: clamp(32px, 6vw, 96px);
     align-items: center;
     min-height: min(calc(100dvh - 72px), 820px);
     padding-top: 48px;
     padding-bottom: 48px;
   }
-  h1 { font-size: clamp(56px, 8.5vw, 124px); font-weight: 300; margin: 18px 0 22px; line-height: 0.95; }
-  .disciplinas { margin-bottom: 28px; }
-  .frase {
+  h1 { font-size: clamp(42px, 5vw, 76px); font-weight: 300; margin: 14px 0 16px; line-height: 1; }
+  .disciplinas { margin-bottom: 24px; }
+  .presentacion {
     font-family: var(--serif);
-    font-size: clamp(20px, 2vw, 25px);
-    line-height: 1.45;
-    max-width: 21em;
-    margin: 28px 0 40px;
+    font-size: clamp(18px, 1.45vw, 20px);
+    line-height: 1.55;
+    max-width: 34em;
+    margin: 24px 0 36px;
   }
-  .imagen img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .presentacion p { margin: 0 0 0.9em; }
+  .presentacion p:last-child { margin-bottom: 0; }
+  .imagen :global(img) { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; }
 
   .accesos {
     display: grid;
